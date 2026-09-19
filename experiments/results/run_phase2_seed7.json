@@ -1,0 +1,102 @@
+{
+  "p0": 0.0375,
+  "results": [
+    {
+      "mode": "clean",
+      "final_decision": "accept",
+      "rounds_used": 28,
+      "mismatch_rate": 0.0,
+      "disagreements": 0,
+      "latency_ms_per_round": 3.34,
+      "total_runtime_s": 0.0935,
+      "chi_square_secondary_check": {
+        "chi2": 1.091,
+        "critical": 6.635,
+        "verdict": "accept",
+        "n": 28
+      }
+    },
+    {
+      "mode": "noisy",
+      "final_decision": "accept",
+      "rounds_used": 49,
+      "mismatch_rate": 0.0408,
+      "disagreements": 0,
+      "latency_ms_per_round": 3.7712,
+      "total_runtime_s": 0.1848,
+      "chi_square_secondary_check": {
+        "chi2": 0.015,
+        "critical": 6.635,
+        "verdict": "accept",
+        "n": 49
+      }
+    },
+    {
+      "mode": "intercept_resend",
+      "final_decision": "reject",
+      "rounds_used": 17,
+      "mismatch_rate": 0.2941,
+      "disagreements": 0,
+      "latency_ms_per_round": 4.3629,
+      "total_runtime_s": 0.0742,
+      "chi_square_secondary_check": {
+        "chi2": 31.016,
+        "critical": 6.635,
+        "verdict": "reject",
+        "n": 17
+      }
+    },
+    {
+      "mode": "impersonation",
+      "final_decision": "reject",
+      "rounds_used": 3,
+      "mismatch_rate": 1.0,
+      "disagreements": 0,
+      "latency_ms_per_round": 0.8507,
+      "total_runtime_s": 0.0026,
+      "chi_square_secondary_check": {
+        "chi2": 77.0,
+        "critical": 6.635,
+        "verdict": "reject",
+        "n": 3
+      }
+    },
+    {
+      "mode": "cloning",
+      "final_decision": "reject",
+      "rounds_used": 32,
+      "mismatch_rate": 0.1875,
+      "disagreements": 0,
+      "latency_ms_per_round": 4.2487,
+      "total_runtime_s": 0.136,
+      "chi_square_secondary_check": {
+        "chi2": 19.948,
+        "critical": 6.635,
+        "verdict": "reject",
+        "n": 32
+      }
+    },
+    {
+      "mode": "replay",
+      "final_decision": "reject",
+      "rounds_used": 2,
+      "mismatch_rate": null,
+      "disagreements": 0,
+      "latency_ms_per_round": 0.0,
+      "total_runtime_s": 0.0,
+      "note": "honest transcript accepted, replayed transcript rejected"
+    },
+    {
+      "mode": "classical_channel_tamper",
+      "final_decision": "tamper_detected",
+      "rounds_used": 1,
+      "mismatch_rate": null,
+      "disagreements": 0,
+      "latency_ms_per_round": 0.0,
+      "total_runtime_s": 0.0
+    }
+  ],
+  "hoeffding_bound": 0.10539922456186433,
+  "n_star": 200,
+  "epsilon": 0.075
+}

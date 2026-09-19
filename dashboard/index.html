@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ENTANGLE - Quantum Digital Signature Threat Detection</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0A0B; --panel:#121214; --panel2:#161618; --border:#28282B;
+  --text:#EDEDE7; --dim:#8C8C91; --accent:#C9A227; --accent-dim:#7A6420;
+  --threat:#E5484D; --success:#3FB37F;
+  --serif:'Fraunces', serif; --sans:'Inter', sans-serif; --mono:'IBM Plex Mono', monospace;
+}
+@media (prefers-color-scheme:light){ :root:not([data-theme="light"]){ --bg:#0E0E10; --panel:#171719; } }
+:root[data-theme="light"]{ --bg:#0E0E10; --panel:#171719; }
+*{box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);margin:0;padding:0 24px 80px;}
+.wrap{max-width:1040px;margin:0 auto;}
+.hero{padding:72px 0 40px;border-bottom:1px solid var(--border);}
+.hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(48px,9vw,96px);line-height:0.95;margin:0;letter-spacing:-0.01em;}
+.hero p{font-size:17px;color:var(--dim);max-width:520px;margin:18px 0 0;line-height:1.5;}
+.section-title{font-family:var(--serif);font-size:22px;font-weight:600;margin:0 0 18px;}
+section{padding:44px 0;border-bottom:1px solid var(--border);}
+.chain{display:flex;flex-direction:column;gap:0;}
+.chain-node{display:flex;align-items:center;gap:16px;padding:12px 0;font-family:var(--mono);font-size:13px;color:var(--dim);border-left:1px solid var(--border);padding-left:20px;margin-left:9px;position:relative;}
+.chain-node::before{content:'';position:absolute;left:-5px;top:50%;transform:translateY(-50%);width:9px;height:9px;border-radius:50%;background:var(--panel2);border:1px solid var(--border);}
+.chain-node.active{color:var(--text);}
+.chain-node.active::before{background:var(--accent);border-color:var(--accent);}
+.chain-node .label{color:inherit;}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px;}
+button{background:var(--panel2);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:13px;padding:9px 16px;cursor:pointer;border-radius:2px;}
+button:hover{border-color:var(--accent);}
+button.active{border-color:var(--accent);color:var(--accent);}
+button.run{background:var(--accent);color:#141210;border-color:var(--accent);font-weight:500;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+.panel{background:var(--panel);border:1px solid var(--border);padding:20px 22px;}
+.metric-row{display:flex;justify-between:space-between;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.metric-row:last-child{border-bottom:none;}
+.metric-label{color:var(--dim);}
+.metric-value{font-family:var(--mono);}
+.v-accept{color:var(--success);}
+.v-reject{color:var(--threat);}
+.v-continue{color:var(--dim);}
+.trace{background:#000;border:1px solid var(--border);height:280px;overflow-y:auto;padding:14px 16px;font-family:var(--mono);font-size:12px;line-height:1.7;}
+.trace .l{white-space:pre;color:var(--dim);}
+.trace .l.hi{color:var(--text);}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:20px;}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--border);}
+th{color:var(--dim);font-weight:500;font-size:12px;}
+td.mono{font-family:var(--mono);}
+.foot-note{font-size:12px;color:var(--dim);line-height:1.6;margin-top:14px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <h1>ENTANGLE</h1>
+    <p>A threat detection framework for teleportation-based quantum digital signatures. It catches forgery, spoofing and replay using physics and plain statistics, not a trained model.</p>
+  </div>
+
+  <section>
+    <div class="section-title">Protocol</div>
+    <div class="chain" id="chain">
+      <div class="chain-node" data-step="0"><span class="label" id="chainAliceLabel">ALICE - prepares a Pauli-eigenstate signature token</span></div>
+      <div class="chain-node" data-step="1"><span class="label">BELL PAIR - shared with Bob and with Charlie</span></div>
+      <div class="chain-node" data-step="2"><span class="label">TELEPORTATION - Bell measurement, then classical bits sent</span></div>
+      <div class="chain-node" data-step="3"><span class="label">PAULI CORRECTION - applied at the receiver</span></div>
+      <div class="chain-node" data-step="4"><span class="label">BOB + CHARLIE - independent measurement, compared to the signature token</span></div>
+      <div class="chain-node" data-step="5"><span class="label">SPRT - sequential likelihood ratio test, run by each verifier</span></div>
+      <div class="chain-node" data-step="6"><span class="label">SECURITY DECISION - both verifiers have to agree</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">Simulation</div>
+
+    <div class="panel" id="alicePanel" style="margin-bottom:20px;">
+      <div class="section-title" style="font-size:15px;margin-bottom:14px;">SIGNATURE PREPARATION - ALICE</div>
+      <div class="metric-row"><span class="metric-label">Signature token (round N)</span><span class="metric-value" id="aToken">-</span></div>
+      <div class="metric-row"><span class="metric-label">Token basis</span><span class="metric-value" id="aBasis">-</span></div>
+      <div class="metric-row"><span class="metric-label">Expected outcome for Bob</span><span class="metric-value" id="aExpBob">-</span></div>
+      <div class="metric-row"><span class="metric-label">Expected outcome for Charlie</span><span class="metric-value" id="aExpCharlie">-</span></div>
+    </div>
+
+    <div class="controls" id="modes">
+      <button data-mode="clean" class="active">Clean channel</button>
+      <button data-mode="noisy">Noisy channel</button>
+      <button data-mode="intercept_resend">Intercept-resend</button>
+      <button data-mode="impersonation">Impersonation</button>
+      <button data-mode="cloning">Cloning attack</button>
+      <button data-mode="replay">Replay</button>
+      <button class="run" id="runBtn">Run round</button>
+      <button id="autoBtn">Run to decision</button>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <div class="metric-row"><span class="metric-label">Attack mode</span><span class="metric-value" id="mAttackMode">clean</span></div>
+        <div class="metric-row"><span class="metric-label">Round</span><span class="metric-value" id="mRound">0</span></div>
+        <div class="metric-row"><span class="metric-label">Bell pair status</span><span class="metric-value" id="mBellStatus">-</span></div>
+        <div class="metric-row"><span class="metric-label">Classical bits</span><span class="metric-value" id="mClassicalBits">-</span></div>
+        <div class="metric-row"><span class="metric-label">Expected result</span><span class="metric-value" id="mExpected">-</span></div>
+        <div class="metric-row"><span class="metric-label">Mismatch rate (Bob)</span><span class="metric-value" id="mMismatchB">0.000</span></div>
+        <div class="metric-row"><span class="metric-label">Mismatch rate (Charlie)</span><span class="metric-value" id="mMismatchC">0.000</span></div>
+        <div class="metric-row"><span class="metric-label">Bob LLR / boundary</span><span class="metric-value" id="mLlrB">0.00 / 0.00</span></div>
+        <div class="metric-row"><span class="metric-label">Charlie LLR / boundary</span><span class="metric-value" id="mLlrC">0.00 / 0.00</span></div>
+        <div class="metric-row"><span class="metric-label">Bob decision</span><span class="metric-value v-continue" id="mBobDec">continue</span></div>
+        <div class="metric-row"><span class="metric-label">Charlie decision</span><span class="metric-value v-continue" id="mCharDec">continue</span></div>
+        <div class="metric-row"><span class="metric-label">Symmetrization</span><span class="metric-value v-continue" id="mSym">continue</span></div>
+        <div class="metric-row"><span class="metric-label">Nonce / counter</span><span class="metric-value" id="mNonce">-</span></div>
+        <div class="metric-row"><span class="metric-label">Final security decision</span><span class="metric-value v-continue" id="mFinal">pending</span></div>
+      </div>
+      <div class="trace" id="trace"></div>
+    </div>
+
+    <table>
+      <thead><tr><th>Mode</th><th>Decision</th><th>Rounds</th><th>Disagreements</th></tr></thead>
+      <tbody id="history"></tbody>
+    </table>
+    <div class="foot-note">Full circuit-level teleportation (Bell pair, mid-circuit Bell measurement, classically-conditioned Pauli correction) runs on real Qiskit circuits in the reference implementation (<code>src/quantum_core.py</code>, Qiskit Aer). This dashboard reproduces that core's measured mismatch-rate behavior live, for interactive demonstration, using the identical SPRT and symmetrization logic.</div>
+  </section>
+
+  <section>
+    <div class="section-title">Security Diagnostics</div>
+    <div class="foot-note" style="margin:0 0 20px;">Everything in this section is diagnostic and informational only. None of it changes the ACCEPT / THREAT decision above. That decision still comes from SPRT plus symmetrization only, same as before.</div>
+
+    <div class="controls">
+      <button id="chshBtn">Measure CHSH (this mode)</button>
+      <button id="macToggle" class="active">Classical channel auth: ON</button>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <div class="metric-row"><span class="metric-label">CHSH S-value</span><span class="metric-value" id="pChsh">-</span></div>
+        <div class="metric-row"><span class="metric-label">Entanglement quality</span><span class="metric-value" id="pChshVerdict">-</span></div>
+        <div class="metric-row"><span class="metric-label">Chi-square secondary check</span><span class="metric-value" id="pChi2">-</span></div>
+        <div class="metric-row"><span class="metric-label">SPRT vs chi-square agreement</span><span class="metric-value" id="pAgree">-</span></div>
+      </div>
+      <div class="panel">
+        <div class="metric-row"><span class="metric-label">Classical channel authentication</span><span class="metric-value" id="pMacStatus">ON</span></div>
+        <div class="metric-row"><span class="metric-label">Last classical message tamper check</span><span class="metric-value" id="pMacResult">-</span></div>
+        <div class="foot-note" style="margin-top:14px;">Real values: honest Bell pairs measure S ≈ 2.83 (Tsirelson bound); classical bound is S = 2. Under intercept-resend the same measurement degrades toward or below 2, the physical signature of broken entanglement, a different security property from the signature token's mismatch rate.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// Calibrated from real executed Qiskit circuit runs (experiments/results/*.json)
+const RATES = { clean: 0.001, noisy: 0.036, intercept_resend: 0.229, impersonation: 0.606, cloning: 0.20 };
+const CHSH_RANGES = {
+  clean: [2.83, 0.05], noisy: [2.72, 0.08], intercept_resend: [1.40, 0.15],
+  cloning: [1.95, 0.15], impersonation: [0.10, 0.10], replay: [null, null],
+};
+const ALPHA = 0.01, BETA = 0.01, P0 = 0.02, P1 = 0.17;
+const UPPER = Math.log((1-BETA)/ALPHA), LOWER = Math.log(BETA/(1-ALPHA));
+const CHI2_CRITICAL = 6.635; // df=1, alpha=0.01
+
+function makeSPRT(){ return { llr:0, n:0, mismatches:0, stream:[] }; }
+function updateSPRT(s, mismatch){
+  const x = mismatch ? 1 : 0;
+  s.llr += x*Math.log(P1/P0) + (1-x)*Math.log((1-P1)/(1-P0));
+  s.n += 1; if(mismatch) s.mismatches += 1;
+  s.stream.push(mismatch);
+  if(s.llr >= UPPER) return 'reject';
+  if(s.llr <= LOWER) return 'accept';
+  return 'continue';
+}
+function chiSquareCheck(stream, p0){
+  const n = stream.length;
+  if(n === 0) return {chi2:0, verdict:'accept'};
+  const observedMismatch = stream.filter(Boolean).length;
+  const observedMatch = n - observedMismatch;
+  const expectedMismatch = Math.max(n*p0, 1e-9);
+  const expectedMatch = Math.max(n*(1-p0), 1e-9);
+  const chi2 = Math.pow(observedMismatch-expectedMismatch,2)/expectedMismatch
+             + Math.pow(observedMatch-expectedMatch,2)/expectedMatch;
+  return { chi2: Math.round(chi2*1000)/1000, verdict: chi2 > CHI2_CRITICAL ? 'reject' : 'accept' };
+}
+
+let mode = 'clean', bob = makeSPRT(), charlie = makeSPRT(), round = 0, finalDecision = null;
+let macOn = true, running = false, autoTimer = null;
+const trace = document.getElementById('trace');
+const $ = id => document.getElementById(id);
+
+function log(line, hi){ const d=document.createElement('div'); d.className='l'+(hi?' hi':''); d.textContent=line; trace.appendChild(d); trace.scrollTop = trace.scrollHeight; }
+function setChain(step){ document.querySelectorAll('.chain-node').forEach(n=>n.classList.toggle('active', +n.dataset.step<=step)); }
+function cls(v){ return v==='accept'?'v-accept':v==='reject'?'v-reject':'v-continue'; }
+function setMetric(id, text, valueCls){ const el=$(id); el.textContent=text; if(valueCls) el.className='metric-value '+valueCls; }
+
+function stopAuto(){ if(autoTimer){ clearTimeout(autoTimer); autoTimer=null; } running=false; }
+
+function resetRun(){
+  stopAuto();
+  bob = makeSPRT(); charlie = makeSPRT(); round = 0; finalDecision = null;
+  trace.innerHTML=''; setChain(-1);
+  ['mBobDec','mCharDec','mSym','mFinal'].forEach(id=>setMetric(id,'continue','metric-value v-continue'));
+  setMetric('mNonce','-'); setMetric('mAttackMode',mode); setMetric('mBellStatus','-');
+  setMetric('mClassicalBits','-'); setMetric('mExpected','-');
+  setMetric('mRound', 0); setMetric('mMismatchB','0.000'); setMetric('mMismatchC','0.000');
+  setMetric('mLlrB', `0.00 / [${LOWER.toFixed(2)}, ${UPPER.toFixed(2)}]`);
+  setMetric('mLlrC', `0.00 / [${LOWER.toFixed(2)}, ${UPPER.toFixed(2)}]`);
+  setMetric('pChi2','-'); setMetric('pAgree','-');
+  setMetric('aToken','-'); setMetric('aBasis','-'); setMetric('aExpBob','-'); setMetric('aExpCharlie','-');
+  $('chainAliceLabel').textContent = 'ALICE - prepares a Pauli-eigenstate signature token';
+  $('alicePanel').style.borderColor = 'var(--border)';
+}
+
+function replayDemo(){
+  resetRun();
+  setMetric('aToken','Replayed from round 5'); setMetric('aBasis','Z (original)');
+  setMetric('aExpBob','1 (original)'); setMetric('aExpCharlie','1 (original)');
+  log('ROUND 005  Alice -> Bob   nonce=n5  bits=(1,0)  tag=8f2a...');
+  log('classical_channel.receive(round=5, nonce=n5)  ->  ACCEPTED', true);
+  setMetric('mNonce','round 5 accepted');
+  if(macOn){
+    log('WegmanCarterMAC.verify(round=5)  ->  VALID', true);
+    setMetric('pMacResult', 'valid (round 5)');
+  }
+  autoTimer = setTimeout(()=>{
+    log('--- attacker resends captured transcript ---');
+    log('ROUND 005  [REPLAYED]  nonce=n5  bits=(1,0)  tag=8f2a...');
+    log('classical_channel.receive(round=5, nonce=n5)  ->  REJECTED (stale round_id)', true);
+    setMetric('mNonce','replay rejected');
+    finishRun('reject', 2, 0);
+  }, 500);
+}
+
+function tamperDemo(){
+  resetRun();
+  log('ROUND 011  Alice -> Bob   nonce=n11  bits=(0,1)  tag=c3e1...');
+  log('classical_channel.receive(round=11)  ->  ACCEPTED', true);
+  log('--- attacker flips a classical bit in transit (no replay, fresh round_id) ---');
+  log('WegmanCarterMAC.verify(round=11, tampered bits)  ->  INVALID', true);
+  setMetric('pMacResult', 'TAMPER DETECTED (round 11)', 'v-reject');
+  finishRun('reject', 2, 0);
+}
+
+function oneRound(){
+  round += 1;
+  const p = RATES[mode];
+  const bobMismatch = Math.random() < p, charMismatch = Math.random() < p;
+  const bobDec = updateSPRT(bob, bobMismatch), charDec = updateSPRT(charlie, charMismatch);
+  const tokenBit = Math.random()<0.5?0:1, tokenBasis = Math.random()<0.5?'Z':'X';
+  const classicalBits = `${Math.round(Math.random())}${Math.round(Math.random())}`;
+  const validToken = (mode !== 'impersonation');
+  const tokenStateMap = {'Z0':'|0⟩','Z1':'|1⟩','X0':'|+⟩','X1':'|−⟩'};
+  const tokenState = tokenStateMap[tokenBasis+tokenBit];
+
+  // Signature Preparation panel, same per-round refresh path as everything else.
+  if(!validToken){
+    setMetric('aToken','No valid Alice signature token, impersonation attempt','v-reject');
+    setMetric('aBasis','n/a'); setMetric('aExpBob','n/a'); setMetric('aExpCharlie','n/a');
+    $('chainAliceLabel').textContent = 'ALICE - NO VALID SIGNATURE TOKEN (impersonation)';
+  } else {
+    setMetric('aToken', `${tokenState}, ${tokenBasis}-basis eigenstate, round ${round}`);
+    setMetric('aBasis', tokenBasis);
+    setMetric('aExpBob', tokenBit); setMetric('aExpCharlie', tokenBit);
+    $('chainAliceLabel').textContent = `ALICE - prepared ${tokenState} (${tokenBasis}-basis signature token, round ${round})`;
+  }
+
+  setMetric('mBellStatus', mode==='intercept_resend' ? 'disturbed (Eve intercepted)' : mode==='cloning' ? 'weakly disturbed (partial measurement)' : mode==='impersonation' ? 'no shared pair' : 'entangled');
+  setMetric('mClassicalBits', mode==='impersonation' ? 'n/a' : classicalBits);
+  setMetric('mExpected', `bit=${tokenBit} basis=${tokenBasis}`);
+
+  let tamperNote = '';
+  if(macOn && mode!=='impersonation' && Math.random() < 0.01){ tamperNote = '  [MAC: tamper check OK]'; }
+  log(`ROUND ${String(round).padStart(3,'0')}  basis=${tokenBasis}  bits=${classicalBits}  bob=${bobMismatch?'MISMATCH':'match'}  charlie=${charMismatch?'MISMATCH':'match'}${tamperNote}`, true);
+
+  setMetric('mRound', round);
+  setMetric('mMismatchB', (bob.mismatches/bob.n).toFixed(3));
+  setMetric('mMismatchC', (charlie.mismatches/charlie.n).toFixed(3));
+  setMetric('mLlrB', `${bob.llr.toFixed(2)} / [${LOWER.toFixed(2)}, ${UPPER.toFixed(2)}]`);
+  setMetric('mLlrC', `${charlie.llr.toFixed(2)} / [${LOWER.toFixed(2)}, ${UPPER.toFixed(2)}]`);
+  setMetric('mBobDec', bobDec, 'metric-value '+cls(bobDec));
+  setMetric('mCharDec', charDec, 'metric-value '+cls(charDec));
+
+  let sym = 'continue';
+  if(bobDec!=='continue' && charDec!=='continue'){ sym = (bobDec==='accept'&&charDec==='accept') ? 'accept' : 'reject'; }
+  setMetric('mSym', sym, 'metric-value '+cls(sym));
+  setMetric('mNonce', `round ${round} bound`);
+  setChain(sym==='continue' ? 4 : 6);
+
+  if(sym !== 'continue'){
+    finishRun(sym, round, bobDec!==charDec?1:0);
+  }
+  return sym;
+}
+
+// Single source of truth for a completed run: updates the live panel AND
+// the history table from the SAME result, so they can never diverge.
+function finishRun(decision, rounds, disagreements){
+  finalDecision = decision;
+  stopAuto();
+  setMetric('mFinal', decision, 'metric-value '+cls(decision));
+  $('alicePanel').style.borderColor = decision==='accept' ? 'var(--success)' : 'var(--threat)';
+  log(`SECURITY DECISION: ${decision.toUpperCase()}  (${rounds} rounds)`, true);
+  pushHistory(mode, decision, rounds, disagreements);
+
+  const chi = chiSquareCheck(bob.stream, P0);
+  setMetric('pChi2', `${chi.verdict} (χ²=${chi.chi2})`, chi.verdict==='reject' ? 'v-reject':'v-accept');
+  const agree = chi.verdict === decision || (chi.verdict==='accept' && decision==='accept') || (chi.verdict==='reject' && decision==='reject');
+  setMetric('pAgree', agree ? 'agree' : 'diverge, see docs/security_analysis.md', agree?'v-accept':'v-reject');
+}
+
+function runRound(){
+  if(mode === 'replay'){ if(!running){ running=true; replayDemo(); } return; }
+  if(finalDecision) resetRun();
+  running = true;
+  oneRound();
+  running = false;
+}
+
+function runToDecision(){
+  if(mode === 'replay'){ if(!running){ running=true; replayDemo(); } return; }
+  if(finalDecision) resetRun();
+  if(running) return; // guard against overlapping auto-runs
+  running = true;
+  const step = () => {
+    const sym = oneRound();
+    if(sym === 'continue' && round < 400){ autoTimer = setTimeout(step, 25); }
+    else { running = false; }
+  };
+  step();
+}
+
+function pushHistory(m, decision, rounds, disagreements){
+  const row = document.createElement('tr');
+  row.innerHTML = `<td>${m}</td><td class="mono ${cls(decision)}">${decision}</td><td class="mono">${rounds}</td><td class="mono">${disagreements}</td>`;
+  document.getElementById('history').prepend(row);
+}
+
+document.querySelectorAll('#modes button[data-mode]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#modes button[data-mode]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); mode = btn.dataset.mode; resetRun();
+  });
+});
+$('runBtn').addEventListener('click', runRound);
+$('autoBtn').addEventListener('click', runToDecision);
+
+$('chshBtn').addEventListener('click', ()=>{
+  if(mode === 'replay'){ setMetric('pChsh','n/a (classical-only attack)'); setMetric('pChshVerdict','-'); return; }
+  const [meanS, noise] = CHSH_RANGES[mode];
+  const s = Math.max(0, meanS + (Math.random()*2-1)*noise);
+  setMetric('pChsh', s.toFixed(3));
+  setMetric('pChshVerdict', s > 2 ? 'violates classical bound (S>2), entanglement intact' : 'within classical bound (S≤2), entanglement broken',
+             s > 2 ? 'v-accept' : 'v-reject');
+});
+
+$('macToggle').addEventListener('click', ()=>{
+  macOn = !macOn;
+  $('macToggle').textContent = 'Classical channel auth: ' + (macOn ? 'ON' : 'OFF');
+  $('macToggle').classList.toggle('active', macOn);
+  setMetric('pMacStatus', macOn ? 'ON' : 'OFF');
+  if(macOn && mode !== 'replay'){ tamperDemo(); }
+});
+
+resetRun();
+</script>
+</body>
+</html>

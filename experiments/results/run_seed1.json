@@ -1,0 +1,54 @@
+{
+  "p0": 0.029166666666666667,
+  "results": [
+    {
+      "mode": "clean",
+      "final_decision": "accept",
+      "rounds_used": 28,
+      "mismatch_rate": 0.0,
+      "disagreements": 0,
+      "latency_ms_per_round": 4.2443,
+      "total_runtime_s": 0.1188
+    },
+    {
+      "mode": "noisy",
+      "final_decision": "accept",
+      "rounds_used": 52,
+      "mismatch_rate": 0.0385,
+      "disagreements": 0,
+      "latency_ms_per_round": 3.5654,
+      "total_runtime_s": 0.1854
+    },
+    {
+      "mode": "intercept_resend",
+      "final_decision": "reject",
+      "rounds_used": 15,
+      "mismatch_rate": 0.2667,
+      "disagreements": 0,
+      "latency_ms_per_round": 3.9879,
+      "total_runtime_s": 0.0598
+    },
+    {
+      "mode": "impersonation",
+      "final_decision": "reject",
+      "rounds_used": 10,
+      "mismatch_rate": 0.7,
+      "disagreements": 0,
+      "latency_ms_per_round": 0.8213,
+      "total_runtime_s": 0.0082
+    },
+    {
+      "mode": "replay",
+      "final_decision": "reject",
+      "rounds_used": 2,
+      "mismatch_rate": null,
+      "disagreements": 0,
+      "latency_ms_per_round": 0.0,
+      "total_runtime_s": 0.0,
+      "note": "honest transcript accepted, replayed transcript rejected"
+    }
+  ],
+  "hoeffding_bound": 0.10539922456186433,
+  "n_star": 200,
+  "epsilon": 0.075
+}
