@@ -136,11 +136,11 @@ Per-round circuit execution latency: ~1.6–5 ms/round (measured, `AerSimulator`
 
 ## 17. Screenshots
 
-Live dashboard: https://claude.ai/artifact/GdywRjeKZ3GQ5NQyBJ64ZY (see `assets/screenshots/` for captured stills once added).
+Screenshots of the tested scenarios are available in `assets/screenshots/`.
 
 ## 18. Technology Stack
 
-Python 3.12, Qiskit 2.x, qiskit-aer (`AerSimulator`), pytest. Dashboard: self-contained HTML/CSS/JS (no build step).
+Python 3.13, Qiskit 2.x, qiskit-aer (`AerSimulator`), pytest. Dashboard: self-contained HTML/CSS/JS (no build step).
 
 ## 19. Installation
 
