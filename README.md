@@ -8,7 +8,7 @@ Future Quantum Digital Signatures derive security from physical law, entanglemen
 
 ## 2. Problem Statement
 
-Build a cyber threat detection framework for QDS that:
+Build a cyber threat detection framework for QDS that :
 - detects forgery, identity spoofing, and replay attacks in real time
 - includes a built-in attack simulator
 - achieves low computational overhead with a mathematically stated security guarantee
