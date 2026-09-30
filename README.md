@@ -107,7 +107,7 @@ where ε is the gap between the honest baseline and the detection margin. With t
 
 ## 14. Experiments
 
-Five required experiments, run on the real circuit stack, repeated across 6 seeds for reproducibility:
+Five required experiments, run on the real circuit stack, repeated across 6 seeds for reproducibility :
 
 1. Ideal honest channel (no attack, no noise)
 2. Honest channel with physical noise (no attack)
